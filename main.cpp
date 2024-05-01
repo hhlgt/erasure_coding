@@ -227,7 +227,7 @@ void test_partial_decoding_global(int k, int g, int l, int block_size, ECProject
         ifs.close();
     }
     printf("Partial 1: encoding partial blocks!\n");
-    ECProject::encode_partial_blocks_for_decoding_LRC(encode_type, k, g, l, sls1, partial_blocks, block_size, sls1_idx_ptr, svrs_idx_ptr, fls_idx_ptr);
+    ECProject::encode_partial_blocks_for_decoding_LRC_global(encode_type, k, g, l, sls1, partial_blocks, block_size, sls1_idx_ptr, svrs_idx_ptr, fls_idx_ptr);
 
     // partial 2
     std::vector<char *> sls2_data(4);
@@ -247,7 +247,7 @@ void test_partial_decoding_global(int k, int g, int l, int block_size, ECProject
         ifs.close();
     }
     printf("Partial 2: encoding partial blocks!\n");
-    ECProject::encode_partial_blocks_for_decoding_LRC(encode_type, k, g, l, sls2, &partial_blocks[failed_num], block_size, sls2_idx_ptr, svrs_idx_ptr, fls_idx_ptr);
+    ECProject::encode_partial_blocks_for_decoding_LRC_global(encode_type, k, g, l, sls2, &partial_blocks[failed_num], block_size, sls2_idx_ptr, svrs_idx_ptr, fls_idx_ptr);
 
     // failed part
     std::vector<char *> failed_data(failed_num);
