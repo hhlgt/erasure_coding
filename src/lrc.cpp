@@ -1,10 +1,10 @@
 #include <lrc.h>
 #include <common.h>
 
-bool ECProject::make_matrix_Azu_LRC(int k, int g, int l, int *final_matrix)
+bool ECProject::make_encoding_matrix_Azu_LRC(int k, int g, int l, int *final_matrix)
 {
 	int r = (k + l - 1) / l;
-    int *matrix = reed_sol_vandermonde_coding_matrix(k, g, 8);
+    int *matrix = reed_sol_vandermonde_coding_matrix(k, g + 1, 8);
     
     bzero(final_matrix, sizeof(int) * k * (g + l));
 
@@ -12,7 +12,7 @@ bool ECProject::make_matrix_Azu_LRC(int k, int g, int l, int *final_matrix)
     {
         for(int j = 0; j < k; j++)
         {
-            final_matrix[i * k + j] = matrix[i * k + j];
+            final_matrix[i * k + j] = matrix[(i + 1) * k + j];
         }
     }
 
@@ -31,10 +31,10 @@ bool ECProject::make_matrix_Azu_LRC(int k, int g, int l, int *final_matrix)
     return true;
 }
 
-bool ECProject::make_matrix_Azu_LRC_1(int k, int g, int l, int *final_matrix)
+bool ECProject::make_encoding_matrix_Azu_LRC_1(int k, int g, int l, int *final_matrix)     
 {
-    int r = (k + l - 1) / l;
-    int *matrix = reed_sol_vandermonde_coding_matrix(k, g, 8);
+    int r = (k + l - 2) / (l - 1);
+    int *matrix = reed_sol_vandermonde_coding_matrix(k, g + 1, 8);
     
     bzero(final_matrix, sizeof(int) * k * (g + l));
 
@@ -42,7 +42,7 @@ bool ECProject::make_matrix_Azu_LRC_1(int k, int g, int l, int *final_matrix)
     {
         for(int j = 0; j < k; j++)
         {
-            final_matrix[i * k + j] = matrix[i * k + j];
+            final_matrix[i * k + j] = matrix[(i + 1) * k + j];
         }
     }
 
@@ -72,7 +72,7 @@ bool ECProject::make_matrix_Azu_LRC_1(int k, int g, int l, int *final_matrix)
     {
         for(int j = 0; j < k; j++)
         {
-            d_g_matrix[idx + i * k + j] = matrix[i * k + j];
+            d_g_matrix[idx + i * k + j] = matrix[(i + 1) * k + j];
         }
     }
 
@@ -92,10 +92,11 @@ bool ECProject::make_matrix_Azu_LRC_1(int k, int g, int l, int *final_matrix)
     return true;
 }
 
-bool ECProject::make_matrix_Opt_LRC(int k, int g, int l, int *final_matrix)
+// version 2, another version can be constructed like ECProject::make_encoding_matrix_Uni_Cau_LRC
+bool ECProject::make_encoding_matrix_Opt_LRC(int k, int g, int l, int *final_matrix)
 {
     int r = (k + g + l - 1) / l;
-    int *matrix = reed_sol_vandermonde_coding_matrix(k, g, 8);
+    int *matrix = reed_sol_vandermonde_coding_matrix(k, g + 1, 8);
     
     bzero(final_matrix, sizeof(int) * k * (g + l));
 
@@ -103,7 +104,7 @@ bool ECProject::make_matrix_Opt_LRC(int k, int g, int l, int *final_matrix)
     {
         for(int j = 0; j < k; j++)
         {
-            final_matrix[i * k + j] = matrix[i * k + j];
+            final_matrix[i * k + j] = matrix[(i + 1) * k + j];
         }
     }
 
@@ -128,12 +129,12 @@ bool ECProject::make_matrix_Opt_LRC(int k, int g, int l, int *final_matrix)
     {
         for(int j = 0; j < k; j++)
         {
-            d_g_matrix[idx + i * k + j] = matrix[i * k + j];
+            d_g_matrix[idx + i * k + j] = matrix[(i + 1) * k + j];
         }
     }
 
-    // print_matrix(l_matrix.data(), l, k + g);
-    // print_matrix(d_g_matrix.data(), k + g, k);
+    // print_matrix(l_matrix.data(), l, k + g, "l_matrix");
+    // print_matrix(d_g_matrix.data(), k + g, k, "d_g_matrix");
 
     int *mix_matrix = jerasure_matrix_multiply(l_matrix.data(), d_g_matrix.data(), l, k + g, k + g, k, 8);
 
@@ -151,10 +152,425 @@ bool ECProject::make_matrix_Opt_LRC(int k, int g, int l, int *final_matrix)
     return true;
 }
 
+bool ECProject::make_encoding_matrix_Opt_Cau_LRC(int k, int g, int l, int *final_matrix)
+{
+    int r = (k + l - 1) / l;
+    int *matrix = cauchy_good_general_coding_matrix(k, g + 1, 8);
+
+    bzero(final_matrix, sizeof(int) * k * (g + l));
+
+    for(int i = 0; i < g; i++)
+    {
+        for(int j = 0; j < k; j++)
+        {
+            final_matrix[i * k + j] = matrix[i * k + j];
+        }
+    }
+
+
+    int d_idx = 0;
+    for(int i = 0; i < l; i++)
+    {
+        for(int j = 0; j < k; j++)
+        {
+            if(i * r <= j && j < (i + 1) * r)
+            {
+                final_matrix[(i + g) * k + j] = matrix[g * k + d_idx];
+                d_idx++;
+            }
+        }
+    }
+
+    // print_matrix(final_matrix, g + l, k, "final_matrix_before_xor");
+
+    for(int i = 0; i < l; i++)
+    {
+        for(int j = 0; j < g; j++)
+        {
+            galois_region_xor((char *)&matrix[j * k], (char *)&final_matrix[(i + g) * k], 4 * k);
+        }
+    }
+
+    // print_matrix(final_matrix, g + l, k, "final_matrix_after_xor");
+
+    free(matrix);
+
+    return true;
+}
+
+bool ECProject::make_encoding_matrix_Opt_Cau_LRC_v2(int k, int g, int l, int *final_matrix)
+{
+    int r = (k + l - 1) / l;
+    int *matrix = cauchy_good_general_coding_matrix(k, g + 1, 8);
+    
+    bzero(final_matrix, sizeof(int) * k * (g + l));
+
+    for(int i = 0; i < g; i++)
+    {
+        for(int j = 0; j < k; j++)
+        {
+            final_matrix[i * k + j] = matrix[i * k + j];
+        }
+    }
+
+    std::vector<int> l_matrix(l * (k + g), 0);
+    std::vector<int> d_g_matrix((k + g) * k, 0);
+    int idx = 0;
+    for(int i = 0; i < l; i++)
+    {
+        int group_size = std::min(r, k - i * r);
+        for(int j = 0; j < group_size; j++)
+        {
+            l_matrix[i * (k + g) + idx] = matrix[g * k + idx];;
+            idx++;
+        }
+        for(int j = k; j < k + g; j++)
+        {
+            l_matrix[i * (k + g) + j] = 1;
+        }
+    }
+    for(int i = 0; i < k; i++)
+    {
+        d_g_matrix[i * k + i] = 1;
+    }
+    idx = k * k;
+    for(int i = 0; i < g; i++)
+    {
+        for(int j = 0; j < k; j++)
+        {
+            d_g_matrix[idx + i * k + j] = matrix[i * k + j];
+        }
+    }
+
+    // print_matrix(l_matrix.data(), l, k + g, "l_matrix");
+    // print_matrix(d_g_matrix.data(), k + g, k, "d_g_matrix");
+
+    int *mix_matrix = jerasure_matrix_multiply(l_matrix.data(), d_g_matrix.data(), l, k + g, k + g, k, 8);
+
+    idx = g * k;
+    for(int i = 0; i < l; i++)
+    {
+        for(int j = 0; j < k; j++)
+        {
+            final_matrix[idx + i * k + j] = mix_matrix[i * k + j];
+        }
+    }
+
+    // print_matrix(final_matrix, g + l, k, "final_matrix");
+
+    free(matrix);
+    free(mix_matrix);
+    return true;
+}
+
+bool ECProject::make_encoding_matrix_Uni_Cau_LRC(int k, int g, int l, int *final_matrix)
+{
+    int r = (k + g + l - 1) / l;
+    int *matrix = cauchy_good_general_coding_matrix(k, g + 1, 8);
+
+    bzero(final_matrix, sizeof(int) * k * (g + l));
+
+    for(int i = 0; i < g; i++)
+    {
+        for(int j = 0; j < k; j++)
+        {
+            final_matrix[i * k + j] = matrix[i * k + j];
+        }
+    }
+
+    std::vector<int> l_matrix(l * k, 0);
+    int d_idx = 0;
+    int l_idx = 0;
+    for(int i = 0; i < l && d_idx < k; i++)
+    {
+        int group_size = std::min(r, k + g - i * r);
+        for(int j = 0; j < group_size && d_idx < k; j++)
+        {
+            l_matrix[i * k + d_idx] = matrix[g * k + d_idx];
+            d_idx++;
+        }
+        l_idx = i;
+    }
+
+    // print_matrix(l_matrix.data(), l, k, "l_matrix_before_xor");
+
+    int g_idx = 0;
+    for(int i = l_idx; i < l; i++)
+    {
+        int sub_g_num = -1;
+        int group_size = std::min(r, k + g - i * r);
+        if(group_size < r)  // must be the last group
+        {
+            sub_g_num = g - g_idx;
+        }
+        else
+        {
+            sub_g_num = (i + 1) * r - (k + g_idx);
+        }
+        std::vector<int> sub_g_matrix(sub_g_num * k, 0);
+        for(int j = 0; j < sub_g_num; j++)
+        {
+            for(int jj = 0; jj < k; jj++)
+            {
+                sub_g_matrix[j * k + jj] = matrix[g_idx * k + jj];
+            }
+            g_idx++;
+        }
+        for(int j = 0; j < sub_g_num; j++)
+        {
+            galois_region_xor((char *)&sub_g_matrix[j * k], (char *)&l_matrix[i * k], 4 * k);
+        }
+    }
+
+    // print_matrix(l_matrix.data(), l, k, "l_matrix_after_xor");
+
+    int idx = g * k;
+    for(int i = 0; i < l; i++)
+    {
+        for(int j = 0; j < k; j++)
+        {
+            final_matrix[idx + i * k + j] = l_matrix[i * k + j];
+        }
+    }
+
+    // print_matrix(final_matrix, g + l, k, "final_matrix");
+
+    free(matrix);
+
+    return true;
+}
+
+bool ECProject::make_encoding_matrix_Uni_Cau_LRC_v2(int k, int g, int l, int *final_matrix)
+{
+    int r = (k + g + l - 1) / l;
+    int *matrix = cauchy_good_general_coding_matrix(k, g + 1, 8);
+    
+    bzero(final_matrix, sizeof(int) * k * (g + l));
+
+    for(int i = 0; i < g; i++)
+    {
+        for(int j = 0; j < k; j++)
+        {
+            final_matrix[i * k + j] = matrix[i * k + j];
+        }
+    }
+
+    std::vector<int> l_matrix(l * (k + g), 0);
+    std::vector<int> d_g_matrix((k + g) * k, 0);
+    int idx = 0;
+    for(int i = 0; i < l; i++)
+    {
+        int group_size = std::min(r, k + g - i * r);
+        for(int j = 0; j < group_size; j++)
+        {   
+            if(idx < k)
+            {
+                l_matrix[i * (k + g) + idx] = matrix[g * k + idx];  
+            }
+            else
+            {
+                l_matrix[i * (k + g) + idx] = 1;
+            }
+            idx++;
+        }
+    }
+    for(int i = 0; i < k; i++)
+    {
+        d_g_matrix[i * k + i] = 1;
+    }
+    idx = k * k;
+    for(int i = 0; i < g; i++)
+    {
+        for(int j = 0; j < k; j++)
+        {
+            d_g_matrix[idx + i * k + j] = matrix[i * k + j];
+        }
+    }
+
+    // print_matrix(l_matrix.data(), l, k + g, "l_matrix");
+    // print_matrix(d_g_matrix.data(), k + g, k, "d_g_matrix");
+
+    int *mix_matrix = jerasure_matrix_multiply(l_matrix.data(), d_g_matrix.data(), l, k + g, k + g, k, 8);
+
+    idx = g * k;
+    for(int i = 0; i < l; i++)
+    {
+        for(int j = 0; j < k; j++)
+        {
+            final_matrix[idx + i * k + j] = mix_matrix[i * k + j];
+        }
+    }
+
+    // print_matrix(final_matrix, g + l, k, "final_matrix");
+
+    free(matrix);
+    free(mix_matrix);
+    return true;
+}
+
+bool ECProject::make_encoding_matrix(ECTYPE lrc_type, int k, int g, int l, int *final_matrix)
+{
+    if(lrc_type == Azu_LRC)
+    {
+        return make_encoding_matrix_Azu_LRC(k, g, l, final_matrix);
+    }
+    else if(lrc_type == Azu_LRC_1)
+    {
+        return make_encoding_matrix_Azu_LRC_1(k, g, l, final_matrix);
+    }
+    else if(lrc_type == Opt_LRC)
+    {
+        return make_encoding_matrix_Opt_LRC(k, g, l, final_matrix);
+    }
+    else if(lrc_type == Opt_Cau_LRC)
+    {
+        return make_encoding_matrix_Opt_Cau_LRC(k, g, l, final_matrix);
+    }
+    else if(lrc_type == Uni_Cau_LRC)
+    {
+        return make_encoding_matrix_Uni_Cau_LRC(k, g, l, final_matrix);
+    }
+    return false;
+}
+
+bool ECProject::make_group_matrix_Azu_LRC(int k, int g, int l, int *group_matrix, int group_id)
+{
+    int r = (k + l - 1) / l;
+
+    for(int i = 0; i < l; i++)
+    {
+        if(i == group_id)
+        {
+            for(int j = 0; j < k; j++)
+            {
+                if(i * r <= j && j < (i + 1) * r)
+                {
+                    group_matrix[j] = 1;
+                }
+            }
+        }
+    }
+    return true;
+}
+
+bool ECProject::make_group_matrix_Azu_LRC_1(int k, int g, int l, int *group_matrix, int group_id)
+{
+    int r = (k + l - 2) / (l - 1);
+    for(int i = 0; i < l - 1; i++)
+    {
+        if(i == group_id)
+        {
+            int group_size = std::min(r, k - i * r);
+            for(int j = 0; j < group_size; j++)
+            {
+                group_matrix[j] = 1;
+            }
+        }
+    }
+    for(int j = k; j < k + g; j++)
+    {
+        group_matrix[j] = 1;
+    }
+    return true;
+}
+
+bool ECProject::make_group_matrix_Opt_LRC(int k, int g, int l, int *group_matrix, int group_id)
+{
+    int r = (k + g + l - 1) / l;
+    for(int i = 0; i < l; i++)
+    {
+        if(i == group_id)
+        {
+            int group_size = std::min(r, k + g - i * r);
+            for(int j = 0; j < group_size; j++)
+            {
+                group_matrix[j] = 1;
+            }
+        }
+    }
+    return true;
+}
+
+bool ECProject::make_group_matrix_Opt_Cau_LRC(int k, int g, int l, int *group_matrix, int group_id)
+{
+    int r = (k + l - 1) / l;
+    int *matrix = cauchy_good_general_coding_matrix(k, g + 1, 8);
+    int idx = 0;
+    for(int i = 0; i < l; i++)
+    {
+        int group_size = std::min(r, k - i * r);
+        for(int j = 0; j < group_size; j++)
+        {
+            if(i == group_id)
+                group_matrix[j] = matrix[g * k + idx];;
+            idx++;
+        }
+        for(int j = group_size; j < group_size + g; j++)
+        {
+            if(i == group_id)
+                group_matrix[j] = 1;
+        }
+    }
+    return true;
+}
+
+bool ECProject::make_group_matrix_Uni_Cau_LRC(int k, int g, int l, int *group_matrix, int group_id)
+{
+    int r = (k + g + l - 1) / l;
+    int *matrix = cauchy_good_general_coding_matrix(k, g + 1, 8);
+    int idx = 0;
+    for(int i = 0; i < l; i++)
+    {
+        int group_size = std::min(r, k + g - i * r);
+        for(int j = 0; j < group_size; j++)
+        {   
+            if(i == group_id)
+            {
+                if(idx < k)
+                {
+                    group_matrix[j] = matrix[g * k + idx];  
+                }
+                else
+                {
+                    group_matrix[j] = 1;
+                }
+            }
+            idx++;
+        }
+    }
+    std::cout << std::endl;
+    return true;
+}
+
+bool ECProject::make_group_matrix(ECTYPE lrc_type, int k, int g, int l, int *group_matrix, int group_id)
+{
+    if(lrc_type == Azu_LRC)
+    {
+        return make_group_matrix_Azu_LRC(k, g, l, group_matrix, group_id);
+    }
+    else if(lrc_type == Azu_LRC_1)
+    {
+        return make_group_matrix_Azu_LRC_1(k, g, l, group_matrix, group_id);
+    }
+    else if(lrc_type == Opt_LRC)
+    {
+        return make_group_matrix_Opt_LRC(k, g, l, group_matrix, group_id);
+    }
+    else if(lrc_type == Opt_Cau_LRC)
+    {
+        return make_group_matrix_Opt_Cau_LRC(k, g, l, group_matrix, group_id);
+    }
+    else if(lrc_type == Uni_Cau_LRC)
+    {
+        return make_group_matrix_Uni_Cau_LRC(k, g, l, group_matrix, group_id);
+    }
+    return false;
+}
+
 bool ECProject::encode_Azu_LRC(int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size)
 {
 	std::vector<int> lrc_matrix((g + l) * k, 0);
-	make_matrix_Azu_LRC(k, g, l, lrc_matrix.data());
+	make_encoding_matrix_Azu_LRC(k, g, l, lrc_matrix.data());
 	jerasure_matrix_encode(k, g + l, 8, lrc_matrix.data(), data_ptrs, coding_ptrs, block_size);
     return true;
 }
@@ -162,12 +578,12 @@ bool ECProject::encode_Azu_LRC(int k, int g, int l, char **data_ptrs, char **cod
 bool ECProject::encode_Azu_LRC_1(int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size)
 {
 	// std::vector<int> lrc_matrix((g + l - 1) * k, 0);
-	// make_matrix_Azu_LRC(k, g, l - 1, lrc_matrix.data());
+	// make_encoding_matrix_Azu_LRC(k, g, l - 1, lrc_matrix.data());
 	// jerasure_matrix_encode(k, g + l - 1, 8, lrc_matrix.data(), data_ptrs, coding_ptrs, block_size);
 	// std::vector<int> new_matrix(g, 1);
 	// jerasure_matrix_encode(g, 1, 8, new_matrix.data(), coding_ptrs, &coding_ptrs[g + l - 1], block_size);
     std::vector<int> lrc_matrix((g + l) * k, 0);
-    make_matrix_Azu_LRC_1(k, g, l, lrc_matrix.data());
+    make_encoding_matrix_Azu_LRC_1(k, g, l, lrc_matrix.data());
     jerasure_matrix_encode(k, g + l, 8, lrc_matrix.data(), data_ptrs, coding_ptrs, block_size);
     return true;
 }
@@ -198,182 +614,120 @@ bool ECProject::encode_Opt_LRC(int k, int g, int l, char **data_ptrs, char **cod
     //     jerasure_matrix_encode(group_size, 1, 8, new_matrix.data(), new_data, &coding_ptrs[g + i], block_size);
     // }
     std::vector<int> lrc_matrix((g + l) * k, 0);
-    make_matrix_Opt_LRC(k, g, l, lrc_matrix.data());
+    make_encoding_matrix_Opt_LRC(k, g, l, lrc_matrix.data());
     jerasure_matrix_encode(k, g + l, 8, lrc_matrix.data(), data_ptrs, coding_ptrs, block_size);
     return true;
 }
 
-bool ECProject::encode_LRC(LRCTYPE lrc_type, int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size)
+bool ECProject::encode_Opt_Cau_LRC(int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size)
 {
     std::vector<int> lrc_matrix((g + l) * k, 0);
-    if(lrc_type == Azu_LRC)
-    {
-        make_matrix_Azu_LRC(k, g, l, lrc_matrix.data());
-    }
-    else if(lrc_type == Azu_LRC_1)
-    {
-        make_matrix_Azu_LRC_1(k, g, l, lrc_matrix.data());
-    }
-    else if(lrc_type == Opt_LRC)
-    {
-        make_matrix_Opt_LRC(k, g, l, lrc_matrix.data());
-    }
-    print_matrix(lrc_matrix.data(), g + l, k);
+    make_encoding_matrix_Opt_Cau_LRC(k, g, l, lrc_matrix.data());
     jerasure_matrix_encode(k, g + l, 8, lrc_matrix.data(), data_ptrs, coding_ptrs, block_size);
     return true;
 }
-	
 
-bool ECProject::encode_partial_blocks_for_encoding_Azu_LRC(int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size, std::shared_ptr<std::vector<int>> datas_idx_ptr, std::shared_ptr<std::vector<int>> parities_idx_ptr)
+bool ECProject::encode_Uni_Cau_LRC(int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size)
 {
-	std::vector<int> lrc_matrix((k + g + l) * k, 0);
-    get_full_matrix(lrc_matrix.data(), k);
-	make_matrix_Azu_LRC(k, g, l, &(lrc_matrix.data())[k * k]);
-	return encode_partial_blocks_for_encoding(k, g + l, lrc_matrix.data(), data_ptrs, coding_ptrs, block_size, datas_idx_ptr, parities_idx_ptr);
+    std::vector<int> lrc_matrix((g + l) * k, 0);
+    make_encoding_matrix_Uni_Cau_LRC(k, g, l, lrc_matrix.data());
+    jerasure_matrix_encode(k, g + l, 8, lrc_matrix.data(), data_ptrs, coding_ptrs, block_size);
+    return true;
 }
 
-bool ECProject::encode_partial_blocks_for_decoding_Azu_LRC(int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size, std::shared_ptr<std::vector<int>> sls_idx_ptr, std::shared_ptr<std::vector<int>> svrs_idx_ptr, std::shared_ptr<std::vector<int>> fls_idx_ptr)
+bool ECProject::encode_LRC(ECTYPE lrc_type, int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size)
 {
-	std::vector<int> lrc_matrix((k + g + l) * k, 0);
-    get_full_matrix(lrc_matrix.data(), k);
-    make_matrix_Azu_LRC(k, g, l, &(lrc_matrix.data())[k * k]);
-	return encode_partial_blocks_for_decoding(k, g + l, lrc_matrix.data(), data_ptrs, coding_ptrs, block_size, sls_idx_ptr, svrs_idx_ptr, fls_idx_ptr);
+    std::vector<int> lrc_matrix((g + l) * k, 0);
+    make_encoding_matrix(lrc_type, k, g, l, lrc_matrix.data());
+    // print_matrix(lrc_matrix.data(), g + l, k, "lrc_matrix");
+    jerasure_matrix_encode(k, g + l, 8, lrc_matrix.data(), data_ptrs, coding_ptrs, block_size);
+    return true;
 }
 
-bool ECProject::encode_partial_blocks_for_encoding_Azu_LRC_1(int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size, std::shared_ptr<std::vector<int>> datas_idx_ptr, std::shared_ptr<std::vector<int>> parities_idx_ptr)
+bool ECProject::decode_LRC(ECTYPE lrc_type, int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size, int *erasures, int failed_num)
+{
+    std::vector<int> lrc_matrix((g + l) * k, 0);
+    make_encoding_matrix(lrc_type, k, g, l, lrc_matrix.data());
+    int i = 0;
+    i = jerasure_matrix_decode(k, g + l, 8, lrc_matrix.data(), failed_num, erasures, data_ptrs, coding_ptrs, block_size);
+    if(i == -1)
+    {
+        std::cout << "[Decode] Failed!" << std::endl;
+        return false;
+    }
+    return true;
+}
+
+bool ECProject::encode_partial_blocks_for_encoding_LRC_global(ECTYPE lrc_type, int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size, std::shared_ptr<std::vector<int>> datas_idx_ptr, std::shared_ptr<std::vector<int>> parities_idx_ptr)
 {
     std::vector<int> lrc_matrix((k + g + l) * k, 0);
     get_full_matrix(lrc_matrix.data(), k);
-    make_matrix_Azu_LRC_1(k, g, l, &(lrc_matrix.data())[k * k]);
+    make_encoding_matrix(lrc_type, k, g, l, &(lrc_matrix.data())[k * k]);
     return encode_partial_blocks_for_encoding(k, g + l, lrc_matrix.data(), data_ptrs, coding_ptrs, block_size, datas_idx_ptr, parities_idx_ptr);
 }
 
-bool ECProject::encode_partial_blocks_for_decoding_Azu_LRC_1(int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size, std::shared_ptr<std::vector<int>> sls_idx_ptr, std::shared_ptr<std::vector<int>> svrs_idx_ptr, std::shared_ptr<std::vector<int>> fls_idx_ptr)
+bool ECProject::encode_partial_blocks_for_decoding_LRC_global(ECTYPE lrc_type, int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size, std::shared_ptr<std::vector<int>> sls_idx_ptr, std::shared_ptr<std::vector<int>> svrs_idx_ptr, std::shared_ptr<std::vector<int>> fls_idx_ptr)
 {
     std::vector<int> lrc_matrix((k + g + l) * k, 0);
     get_full_matrix(lrc_matrix.data(), k);
-    make_matrix_Azu_LRC_1(k, g, l, &(lrc_matrix.data())[k * k]);
+    make_encoding_matrix(lrc_type, k, g, l, &(lrc_matrix.data())[k * k]);
     return encode_partial_blocks_for_decoding(k, g + l, lrc_matrix.data(), data_ptrs, coding_ptrs, block_size, sls_idx_ptr, svrs_idx_ptr, fls_idx_ptr);
 }
 
-bool ECProject::encode_partial_blocks_for_encoding_Opt_LRC(int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size, std::shared_ptr<std::vector<int>> datas_idx_ptr, std::shared_ptr<std::vector<int>> parities_idx_ptr)
+bool ECProject::encode_partial_blocks_for_decoding_LRC_local(ECTYPE lrc_type, int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size, std::shared_ptr<std::vector<int>> sls_idx_ptr, std::shared_ptr<std::vector<int>> svrs_idx_ptr, std::shared_ptr<std::vector<int>> fls_idx_ptr)
 {
-    std::vector<int> lrc_matrix((k + g + l) * k, 0);
-    get_full_matrix(lrc_matrix.data(), k);
-    make_matrix_Opt_LRC(k, g, l, &(lrc_matrix.data())[k * k]);
-    return encode_partial_blocks_for_encoding(k, g + l, lrc_matrix.data(), data_ptrs, coding_ptrs, block_size, datas_idx_ptr, parities_idx_ptr);
-}
+    int group_size = int(svrs_idx_ptr->size());
+    int group_id = -1;
+    int min_idx = k + g + l;
+    for(auto it = svrs_idx_ptr->begin(); it != svrs_idx_ptr->end(); it++)
+    {
+        int idx = *it;
+        if(idx >= k + g)
+            group_id = idx - k - g;
+        if(idx < min_idx)
+            min_idx = idx;
+    }
+    for(auto it = fls_idx_ptr->begin(); it != fls_idx_ptr->end(); it++)
+    {
+        int idx = *it;
+        if(idx >= k + g)
+            group_id = idx - k - g;
+        if(idx < min_idx)
+            min_idx = idx;
+    }
 
-bool ECProject::encode_partial_blocks_for_decoding_Opt_LRC(int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size, std::shared_ptr<std::vector<int>> sls_idx_ptr, std::shared_ptr<std::vector<int>> svrs_idx_ptr, std::shared_ptr<std::vector<int>> fls_idx_ptr)
-{
-    std::vector<int> lrc_matrix((k + g + l) * k, 0);
-    get_full_matrix(lrc_matrix.data(), k);
-    make_matrix_Opt_LRC(k, g, l, &(lrc_matrix.data())[k * k]);
-    return encode_partial_blocks_for_decoding(k, g + l, lrc_matrix.data(), data_ptrs, coding_ptrs, block_size, sls_idx_ptr, svrs_idx_ptr, fls_idx_ptr);
-}
+    auto sls_idx_ptr_ = std::make_shared<std::vector<int>>();
+    auto fls_idx_ptr_ = std::make_shared<std::vector<int>>();
+    auto svrs_idx_ptr_ = std::make_shared<std::vector<int>>();
+    for(auto it = svrs_idx_ptr->begin(); it != svrs_idx_ptr->end(); it++)
+    {
+        int idx = *it;
+        if(idx >= k + g)
+            svrs_idx_ptr_->push_back(group_size);
+        else
+            svrs_idx_ptr_->push_back(idx - min_idx);
+    }
+    for(auto it = fls_idx_ptr->begin(); it != fls_idx_ptr->end(); it++)
+    {
+        int idx = *it;
+        if(idx >= k + g)
+            fls_idx_ptr_->push_back(group_size);
+        else
+            fls_idx_ptr_->push_back(idx - min_idx);
+    }
+    for(auto it = sls_idx_ptr->begin(); it != sls_idx_ptr->end(); it++)
+    {
+        int idx = *it;
+        if(idx >= k + g)
+            sls_idx_ptr_->push_back(group_size);
+        else
+            sls_idx_ptr_->push_back(idx - min_idx);
+    }
 
-bool ECProject::encode_partial_blocks_for_encoding_LRC(LRCTYPE lrc_type, int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size, std::shared_ptr<std::vector<int>> datas_idx_ptr, std::shared_ptr<std::vector<int>> parities_idx_ptr)
-{
-    std::vector<int> lrc_matrix((k + g + l) * k, 0);
-    get_full_matrix(lrc_matrix.data(), k);
-    if(lrc_type == Azu_LRC)
-    {
-        make_matrix_Azu_LRC(k, g, l, &(lrc_matrix.data())[k * k]);
-    }
-    else if(lrc_type == Azu_LRC_1)
-    {
-        make_matrix_Azu_LRC_1(k, g, l, &(lrc_matrix.data())[k * k]);
-    }
-    else if(lrc_type == Opt_LRC)
-    {
-        make_matrix_Opt_LRC(k, g, l, &(lrc_matrix.data())[k * k]);
-    }
-    return encode_partial_blocks_for_encoding(k, g + l, lrc_matrix.data(), data_ptrs, coding_ptrs, block_size, datas_idx_ptr, parities_idx_ptr);
-}
-
-bool ECProject::encode_partial_blocks_for_decoding_LRC(LRCTYPE lrc_type, int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size, std::shared_ptr<std::vector<int>> sls_idx_ptr, std::shared_ptr<std::vector<int>> svrs_idx_ptr, std::shared_ptr<std::vector<int>> fls_idx_ptr)
-{
-    std::vector<int> lrc_matrix((k + g + l) * k, 0);
-    get_full_matrix(lrc_matrix.data(), k);
-    if(lrc_type == Azu_LRC)
-    {
-        make_matrix_Azu_LRC(k, g, l, &(lrc_matrix.data())[k * k]);
-    }
-    else if(lrc_type == Azu_LRC_1)
-    {
-        make_matrix_Azu_LRC_1(k, g, l, &(lrc_matrix.data())[k * k]);
-    }
-    else if(lrc_type == Opt_LRC)
-    {
-        make_matrix_Opt_LRC(k, g, l, &(lrc_matrix.data())[k * k]);
-    }
-    return encode_partial_blocks_for_decoding(k, g + l, lrc_matrix.data(), data_ptrs, coding_ptrs, block_size, sls_idx_ptr, svrs_idx_ptr, fls_idx_ptr);
-}
-
-bool ECProject::decode_Azu_LRC(int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size, int *erasures, int failed_num)
-{
-    std::vector<int> lrc_matrix((g + l) * k, 0);
-    make_matrix_Azu_LRC(k, g, l, lrc_matrix.data());
-    int i = 0;
-    i = jerasure_matrix_decode(k, g + l, 8, lrc_matrix.data(), failed_num, erasures, data_ptrs, coding_ptrs, block_size);
-    if(i == -1)
-    {
-        std::cout << "[Decode] Failed!" << std::endl;
-        return false;
-    }
-    return true;
-}
-
-bool ECProject::decode_Azu_LRC_1(int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size, int *erasures, int failed_num)
-{
-    std::vector<int> lrc_matrix((g + l) * k, 0);
-    make_matrix_Azu_LRC_1(k, g, l, lrc_matrix.data());
-    int i = 0;
-    i = jerasure_matrix_decode(k, g + l, 8, lrc_matrix.data(), failed_num, erasures, data_ptrs, coding_ptrs, block_size);
-    if(i == -1)
-    {
-        std::cout << "[Decode] Failed!" << std::endl;
-        return false;
-    }
-    return true;
-}
-
-bool ECProject::decode_Opt_LRC(int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size, int *erasures, int failed_num)
-{
-    std::vector<int> lrc_matrix((g + l) * k, 0);
-    make_matrix_Opt_LRC(k, g, l, lrc_matrix.data());
-    int i = 0;
-    i = jerasure_matrix_decode(k, g + l, 8, lrc_matrix.data(), failed_num, erasures, data_ptrs, coding_ptrs, block_size);
-    if(i == -1)
-    {
-        std::cout << "[Decode] Failed!" << std::endl;
-        return false;
-    }
-    return true;
-}
-
-bool ECProject::decode_LRC(LRCTYPE lrc_type, int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size, int *erasures, int failed_num)
-{
-    std::vector<int> lrc_matrix((g + l) * k, 0);
-    if(lrc_type == Azu_LRC)
-    {
-        make_matrix_Azu_LRC(k, g, l, lrc_matrix.data());
-    }
-    else if(lrc_type == Azu_LRC_1)
-    {
-        make_matrix_Azu_LRC_1(k, g, l, lrc_matrix.data());
-    }
-    else if(lrc_type == Opt_LRC)
-    {
-        make_matrix_Opt_LRC(k, g, l, lrc_matrix.data());
-    }
-    int i = 0;
-    i = jerasure_matrix_decode(k, g + l, 8, lrc_matrix.data(), failed_num, erasures, data_ptrs, coding_ptrs, block_size);
-    if(i == -1)
-    {
-        std::cout << "[Decode] Failed!" << std::endl;
-        return false;
-    }
-    return true;
+    std::vector<int> group_matrix((group_size + 1) * group_size, 0);
+    get_full_matrix(group_matrix.data(), group_size);
+    make_group_matrix(lrc_type, k, g, l, &(group_matrix.data())[group_size * group_size], group_id);
+    // print_matrix(group_matrix.data(), group_size + 1, group_size, "group_matrix");
+    return encode_partial_blocks_for_decoding(group_size, 1, group_matrix.data(), data_ptrs, coding_ptrs, block_size, sls_idx_ptr_, svrs_idx_ptr_, fls_idx_ptr_);
 }
 

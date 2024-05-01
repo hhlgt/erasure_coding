@@ -1,7 +1,8 @@
 #include <common.h>
 
-void ECProject::print_matrix(int *matrix, int rows, int cols)
+void ECProject::print_matrix(int *matrix, int rows, int cols, std::string msg)
 {
+	std::cout << msg << ":" << std::endl;
 	for(int i = 0; i < rows; i++)
 	{
 		for(int j = 0; j < cols; j++)
@@ -20,28 +21,28 @@ void ECProject::get_full_matrix(int *matrix, int k)
 	}
 }
 
-bool ECProject::make_submatrix_by_rows(int k, int *matrix, int *new_matrix, std::shared_ptr<std::vector<int>> blocks_idx_ptr)
+bool ECProject::make_submatrix_by_rows(int cols, int *matrix, int *new_matrix, std::shared_ptr<std::vector<int>> blocks_idx_ptr)
 {
 	int i = 0;
 	for (auto it = blocks_idx_ptr->begin(); it != blocks_idx_ptr->end(); it++)
 	{
 		int j = *it;
-		memcpy(&new_matrix[i * k], &matrix[j * k], k * sizeof(int));
+		memcpy(&new_matrix[i * cols], &matrix[j * cols], cols * sizeof(int));
 		i++;
 	}
 	return true;
 }
 
-bool ECProject::make_submatrix_by_cols(int k, int m, int *matrix, int *new_matrix, std::shared_ptr<std::vector<int>> blocks_idx_ptr)
+bool ECProject::make_submatrix_by_cols(int cols, int rows, int *matrix, int *new_matrix, std::shared_ptr<std::vector<int>> blocks_idx_ptr)
 {
 	int block_num = int(blocks_idx_ptr->size());
 	int i = 0;
 	for (auto it = blocks_idx_ptr->begin(); it != blocks_idx_ptr->end(); it++)
 	{
 		int j = *it;
-		for(int u = 0; u < m; u++)
+		for(int u = 0; u < rows; u++)
 		{
-			new_matrix[u * block_num + i] = matrix[u * k + j];
+			new_matrix[u * block_num + i] = matrix[u * cols + j];
 		}
 		i++;
 	}
@@ -51,6 +52,7 @@ bool ECProject::make_submatrix_by_cols(int k, int m, int *matrix, int *new_matri
 /*
 	we assume the blocks is organized as followed:
 	data_ptrs = [B11, ..., Bp1, B12, ..., Bp2, ........., B1n, ..., Bpn]
+	coding_ptrs = [P1, ..., Pn]
 	block_num = p * n, parity_num = p
 	then Pi = Bi1 + Bi2 + ... + Bin, 1 <= i <= p
 */
@@ -105,12 +107,14 @@ bool ECProject::encode_partial_blocks_for_decoding(int k, int m, int *full_matri
 	std::vector<int> survivors_matrix(k * k, 0);
 	make_submatrix_by_rows(k, full_matrix, failures_matrix.data(), fls_idx_ptr);
 	make_submatrix_by_rows(k, full_matrix, survivors_matrix.data(), svrs_idx_ptr);
+	// print_matrix(failures_matrix.data(), failures_num, k, "failures_matrix");
+	// print_matrix(survivors_matrix.data(), k, k, "survivors_matrix");
 
 	std::vector<int> inverse_matrix(k * k, 0);
 	jerasure_invert_matrix(survivors_matrix.data(), inverse_matrix.data(), k, 8);
+	// print_matrix(inverse_matrix.data(), k, k, "inverse_matrix");
 	
 	int *decoding_matrix = jerasure_matrix_multiply(failures_matrix.data(), inverse_matrix.data(), failures_num, k, k, k, 8);
-
 	std::vector<int> encoding_matrix(failures_num * local_survivors_num, 0);
 	int i = 0;
 	for(auto it2 = sls_idx_ptr->begin(); it2 != sls_idx_ptr->end(); it2++, i++)
@@ -127,9 +131,7 @@ bool ECProject::encode_partial_blocks_for_decoding(int k, int m, int *full_matri
 			encoding_matrix[u * local_survivors_num + i] = decoding_matrix[u * k + idx];
 		}
 	}
-
 	jerasure_matrix_encode(local_survivors_num, failures_num, 8, encoding_matrix.data(), data_ptrs, coding_ptrs, block_size);
-
 	free(decoding_matrix);
 	
 	return true;

@@ -10,8 +10,8 @@ def generate_file(size, unit, num):
         n = n * 1048576
     chars = ''.join([random.choice(string.ascii_letters) for i in range(n)])
     filename = './../data/Object' + str(num)
-    if num < 10:
-        filename = './../data/Object0' + str(num)
+    # if num < 10:
+    #     filename = './../data/Object0' + str(num)
     with open(filename, 'w') as f:
         f.write(chars)
 
