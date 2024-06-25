@@ -12,3 +12,39 @@ Erasure Codes include
   - Optimal Cauchy LRC
   - Uniform Cauchy LRC
 - Product Codes
+
+------
+
+### Quick Start
+
+- environment
+
+  - cmake 3.15.0
+  - gcc 9.4.0
+
+- install third party
+
+  ```
+  sh install_jerasure.sh
+  ```
+
+- compile
+
+  ```
+  sh compile.sh
+  ```
+
+- create test data
+
+  ```
+  sh create_dirs.sh
+  ```
+
+- run
+
+  ```
+  cd build
+  ./test_xx
+  ```
+
+  
