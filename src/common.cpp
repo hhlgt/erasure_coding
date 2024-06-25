@@ -21,7 +21,7 @@ void ECProject::get_full_matrix(int *matrix, int k)
 	}
 }
 
-bool ECProject::make_submatrix_by_rows(int cols, int *matrix, int *new_matrix, std::shared_ptr<std::vector<int>> blocks_idx_ptr)
+void ECProject::make_submatrix_by_rows(int cols, int *matrix, int *new_matrix, std::shared_ptr<std::vector<int>> blocks_idx_ptr)
 {
 	int i = 0;
 	for (auto it = blocks_idx_ptr->begin(); it != blocks_idx_ptr->end(); it++)
@@ -30,10 +30,9 @@ bool ECProject::make_submatrix_by_rows(int cols, int *matrix, int *new_matrix, s
 		memcpy(&new_matrix[i * cols], &matrix[j * cols], cols * sizeof(int));
 		i++;
 	}
-	return true;
 }
 
-bool ECProject::make_submatrix_by_cols(int cols, int rows, int *matrix, int *new_matrix, std::shared_ptr<std::vector<int>> blocks_idx_ptr)
+void ECProject::make_submatrix_by_cols(int cols, int rows, int *matrix, int *new_matrix, std::shared_ptr<std::vector<int>> blocks_idx_ptr)
 {
 	int block_num = int(blocks_idx_ptr->size());
 	int i = 0;
@@ -46,7 +45,6 @@ bool ECProject::make_submatrix_by_cols(int cols, int rows, int *matrix, int *new
 		}
 		i++;
 	}
-	return true;
 }
 
 /*
@@ -56,12 +54,12 @@ bool ECProject::make_submatrix_by_cols(int cols, int rows, int *matrix, int *new
 	block_num = p * n, parity_num = p
 	then Pi = Bi1 + Bi2 + ... + Bin, 1 <= i <= p
 */
-bool ECProject::perform_addition(char **data_ptrs, char **coding_ptrs, int block_size, int block_num, int parity_num)
+void ECProject::perform_addition(char **data_ptrs, char **coding_ptrs, int block_size, int block_num, int parity_num)
 {
     if(block_num % parity_num != 0)
     {
         printf("invalid! %d mod %d != 0\n", block_num, parity_num);
-        return false;
+        return;
     }
     int block_num_per_parity = block_num / parity_num;
 
@@ -81,11 +79,10 @@ bool ECProject::perform_addition(char **data_ptrs, char **coding_ptrs, int block
         std::vector<int> new_matrix(1 * block_num_per_parity, 1);
         jerasure_matrix_encode(block_num_per_parity, 1, 8, new_matrix.data(), &data[i * block_num_per_parity], &coding_ptrs[i], block_size);
     }
-    return true;
 }
 
 // any parity_idx >= k
-bool ECProject::encode_partial_blocks_for_encoding(int k, int m, int *full_matrix, char **data_ptrs, char **coding_ptrs, int block_size, std::shared_ptr<std::vector<int>> datas_idx_ptr, std::shared_ptr<std::vector<int>> parities_idx_ptr)
+void ECProject::encode_partial_blocks_for_encoding(int k, int m, int *full_matrix, char **data_ptrs, char **coding_ptrs, int block_size, std::shared_ptr<std::vector<int>> datas_idx_ptr, std::shared_ptr<std::vector<int>> parities_idx_ptr)
 {
 	int block_num = int(datas_idx_ptr->size());
 	int parity_num = int(parities_idx_ptr->size());
@@ -96,10 +93,9 @@ bool ECProject::encode_partial_blocks_for_encoding(int k, int m, int *full_matri
 	make_submatrix_by_cols(k, parity_num, matrix.data(), new_matrix.data(), datas_idx_ptr);
 
     jerasure_matrix_encode(block_num, parity_num, 8, new_matrix.data(), data_ptrs, coding_ptrs, block_size);
-	return true;
 }
 
-bool ECProject::encode_partial_blocks_for_decoding(int k, int m, int *full_matrix, char **data_ptrs, char **coding_ptrs, int block_size, std::shared_ptr<std::vector<int>> sls_idx_ptr, std::shared_ptr<std::vector<int>> svrs_idx_ptr, std::shared_ptr<std::vector<int>> fls_idx_ptr)
+void ECProject::encode_partial_blocks_for_decoding(int k, int m, int *full_matrix, char **data_ptrs, char **coding_ptrs, int block_size, std::shared_ptr<std::vector<int>> sls_idx_ptr, std::shared_ptr<std::vector<int>> svrs_idx_ptr, std::shared_ptr<std::vector<int>> fls_idx_ptr)
 {
 	int local_survivors_num = int(sls_idx_ptr->size());
 	int failures_num = int(fls_idx_ptr->size());
@@ -133,6 +129,4 @@ bool ECProject::encode_partial_blocks_for_decoding(int k, int m, int *full_matri
 	}
 	jerasure_matrix_encode(local_survivors_num, failures_num, 8, encoding_matrix.data(), data_ptrs, coding_ptrs, block_size);
 	free(decoding_matrix);
-	
-	return true;
 }

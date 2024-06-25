@@ -1,16 +1,17 @@
 CRT_DIR=$(pwd)
 set -e
 
-GF_INSTALL_DIR=$CRT_DIR"/gf-complete"
-GF_DIR=$CRT_DIR"/third_party/gf-complete"
-JERASURE_INSTALL_DIR=$CRT_DIR"/jerasure"
-JERASURE_DIR=$CRT_DIR"/third_party/jerasure"
+PACKAGES_DIR=$CRT_DIR"/third_party_packages"
+GF_INSTALL_DIR=$CRT_DIR"/third_party/gf-complete"
+GF_DIR=$PACKAGES_DIR"/gf-complete"
+JERASURE_INSTALL_DIR=$CRT_DIR"/third_party/jerasure"
+JERASURE_DIR=$PACKAGES_DIR"/jerasure"
 
 # gf-complete
 mkdir -p $GF_INSTALL_DIR
 cd $GF_INSTALL_DIR
 rm * -rf
-cd $CRT_DIR"/third_party"
+cd $PACKAGES_DIR
 rm -rf gf-complete
 tar -xvzf gf-complete.tar.gz
 cd $GF_DIR
@@ -23,7 +24,7 @@ make install
 mkdir -p $JERASURE_INSTALL_DIR
 cd $JERASURE_INSTALL_DIR
 rm * -rf
-cd $CRT_DIR"/third_party"
+cd $PACKAGES_DIR
 rm -rf jerasure
 tar -xvzf jerasure.tar.gz
 cd $JERASURE_DIR
@@ -31,5 +32,7 @@ autoreconf -if
 ./configure --prefix=$JERASURE_INSTALL_DIR LDFLAGS=-L$GF_INSTALL_DIR/lib CPPFLAGS=-I$GF_INSTALL_DIR/include
 make -j6
 make install
-cd $JERASURE_DIR
+
+cd $PACKAGES_DIR
+rm -rf gf-complete
 rm -rf jerasure

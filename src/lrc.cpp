@@ -1,7 +1,7 @@
 #include <lrc.h>
 #include <common.h>
 
-bool ECProject::make_encoding_matrix_Azu_LRC(int k, int g, int l, int *final_matrix)
+void ECProject::make_encoding_matrix_Azu_LRC(int k, int g, int l, int *final_matrix)
 {
 	int r = (k + l - 1) / l;
     int *matrix = reed_sol_vandermonde_coding_matrix(k, g + 1, 8);
@@ -28,10 +28,9 @@ bool ECProject::make_encoding_matrix_Azu_LRC(int k, int g, int l, int *final_mat
     }
 
     free(matrix);
-    return true;
 }
 
-bool ECProject::make_encoding_matrix_Azu_LRC_1(int k, int g, int l, int *final_matrix)     
+void ECProject::make_encoding_matrix_Azu_LRC_1(int k, int g, int l, int *final_matrix)     
 {
     int r = (k + l - 2) / (l - 1);
     int *matrix = reed_sol_vandermonde_coding_matrix(k, g + 1, 8);
@@ -89,11 +88,10 @@ bool ECProject::make_encoding_matrix_Azu_LRC_1(int k, int g, int l, int *final_m
 
     free(matrix);
     free(mix_matrix);
-    return true;
 }
 
 // version 2, another version can be constructed like ECProject::make_encoding_matrix_Uni_Cau_LRC
-bool ECProject::make_encoding_matrix_Opt_LRC(int k, int g, int l, int *final_matrix)
+void ECProject::make_encoding_matrix_Opt_LRC(int k, int g, int l, int *final_matrix)
 {
     int r = (k + g + l - 1) / l;
     int *matrix = reed_sol_vandermonde_coding_matrix(k, g + 1, 8);
@@ -149,10 +147,9 @@ bool ECProject::make_encoding_matrix_Opt_LRC(int k, int g, int l, int *final_mat
 
     free(matrix);
     free(mix_matrix);
-    return true;
 }
 
-bool ECProject::make_encoding_matrix_Opt_Cau_LRC(int k, int g, int l, int *final_matrix)
+void ECProject::make_encoding_matrix_Opt_Cau_LRC(int k, int g, int l, int *final_matrix)
 {
     int r = (k + l - 1) / l;
     int *matrix = cauchy_good_general_coding_matrix(k, g + 1, 8);
@@ -194,11 +191,9 @@ bool ECProject::make_encoding_matrix_Opt_Cau_LRC(int k, int g, int l, int *final
     // print_matrix(final_matrix, g + l, k, "final_matrix_after_xor");
 
     free(matrix);
-
-    return true;
 }
 
-bool ECProject::make_encoding_matrix_Opt_Cau_LRC_v2(int k, int g, int l, int *final_matrix)
+void ECProject::make_encoding_matrix_Opt_Cau_LRC_v2(int k, int g, int l, int *final_matrix)
 {
     int r = (k + l - 1) / l;
     int *matrix = cauchy_good_general_coding_matrix(k, g + 1, 8);
@@ -260,10 +255,9 @@ bool ECProject::make_encoding_matrix_Opt_Cau_LRC_v2(int k, int g, int l, int *fi
 
     free(matrix);
     free(mix_matrix);
-    return true;
 }
 
-bool ECProject::make_encoding_matrix_Uni_Cau_LRC(int k, int g, int l, int *final_matrix)
+void ECProject::make_encoding_matrix_Uni_Cau_LRC(int k, int g, int l, int *final_matrix)
 {
     int r = (k + g + l - 1) / l;
     int *matrix = cauchy_good_general_coding_matrix(k, g + 1, 8);
@@ -336,11 +330,9 @@ bool ECProject::make_encoding_matrix_Uni_Cau_LRC(int k, int g, int l, int *final
     // print_matrix(final_matrix, g + l, k, "final_matrix");
 
     free(matrix);
-
-    return true;
 }
 
-bool ECProject::make_encoding_matrix_Uni_Cau_LRC_v2(int k, int g, int l, int *final_matrix)
+void ECProject::make_encoding_matrix_Uni_Cau_LRC_v2(int k, int g, int l, int *final_matrix)
 {
     int r = (k + g + l - 1) / l;
     int *matrix = cauchy_good_general_coding_matrix(k, g + 1, 8);
@@ -405,35 +397,33 @@ bool ECProject::make_encoding_matrix_Uni_Cau_LRC_v2(int k, int g, int l, int *fi
 
     free(matrix);
     free(mix_matrix);
-    return true;
 }
 
-bool ECProject::make_encoding_matrix(ECTYPE lrc_type, int k, int g, int l, int *final_matrix)
+void ECProject::make_encoding_matrix(ECTYPE lrc_type, int k, int g, int l, int *final_matrix)
 {
     if(lrc_type == Azu_LRC)
     {
-        return make_encoding_matrix_Azu_LRC(k, g, l, final_matrix);
+        make_encoding_matrix_Azu_LRC(k, g, l, final_matrix);
     }
     else if(lrc_type == Azu_LRC_1)
     {
-        return make_encoding_matrix_Azu_LRC_1(k, g, l, final_matrix);
+        make_encoding_matrix_Azu_LRC_1(k, g, l, final_matrix);
     }
     else if(lrc_type == Opt_LRC)
     {
-        return make_encoding_matrix_Opt_LRC(k, g, l, final_matrix);
+        make_encoding_matrix_Opt_LRC(k, g, l, final_matrix);
     }
     else if(lrc_type == Opt_Cau_LRC)
     {
-        return make_encoding_matrix_Opt_Cau_LRC(k, g, l, final_matrix);
+        make_encoding_matrix_Opt_Cau_LRC(k, g, l, final_matrix);
     }
     else if(lrc_type == Uni_Cau_LRC)
     {
-        return make_encoding_matrix_Uni_Cau_LRC(k, g, l, final_matrix);
+        make_encoding_matrix_Uni_Cau_LRC(k, g, l, final_matrix);
     }
-    return false;
 }
 
-bool ECProject::make_group_matrix_Azu_LRC(int k, int g, int l, int *group_matrix, int group_id)
+void ECProject::make_group_matrix_Azu_LRC(int k, int g, int l, int *group_matrix, int group_id)
 {
     int r = (k + l - 1) / l;
 
@@ -450,10 +440,9 @@ bool ECProject::make_group_matrix_Azu_LRC(int k, int g, int l, int *group_matrix
             }
         }
     }
-    return true;
 }
 
-bool ECProject::make_group_matrix_Azu_LRC_1(int k, int g, int l, int *group_matrix, int group_id)
+void ECProject::make_group_matrix_Azu_LRC_1(int k, int g, int l, int *group_matrix, int group_id)
 {
     int r = (k + l - 2) / (l - 1);
     for(int i = 0; i < l - 1; i++)
@@ -471,10 +460,9 @@ bool ECProject::make_group_matrix_Azu_LRC_1(int k, int g, int l, int *group_matr
     {
         group_matrix[j] = 1;
     }
-    return true;
 }
 
-bool ECProject::make_group_matrix_Opt_LRC(int k, int g, int l, int *group_matrix, int group_id)
+void ECProject::make_group_matrix_Opt_LRC(int k, int g, int l, int *group_matrix, int group_id)
 {
     int r = (k + g + l - 1) / l;
     for(int i = 0; i < l; i++)
@@ -488,10 +476,9 @@ bool ECProject::make_group_matrix_Opt_LRC(int k, int g, int l, int *group_matrix
             }
         }
     }
-    return true;
 }
 
-bool ECProject::make_group_matrix_Opt_Cau_LRC(int k, int g, int l, int *group_matrix, int group_id)
+void ECProject::make_group_matrix_Opt_Cau_LRC(int k, int g, int l, int *group_matrix, int group_id)
 {
     int r = (k + l - 1) / l;
     int *matrix = cauchy_good_general_coding_matrix(k, g + 1, 8);
@@ -511,10 +498,9 @@ bool ECProject::make_group_matrix_Opt_Cau_LRC(int k, int g, int l, int *group_ma
                 group_matrix[j] = 1;
         }
     }
-    return true;
 }
 
-bool ECProject::make_group_matrix_Uni_Cau_LRC(int k, int g, int l, int *group_matrix, int group_id)
+void ECProject::make_group_matrix_Uni_Cau_LRC(int k, int g, int l, int *group_matrix, int group_id)
 {
     int r = (k + g + l - 1) / l;
     int *matrix = cauchy_good_general_coding_matrix(k, g + 1, 8);
@@ -538,45 +524,43 @@ bool ECProject::make_group_matrix_Uni_Cau_LRC(int k, int g, int l, int *group_ma
             idx++;
         }
     }
-    std::cout << std::endl;
-    return true;
 }
 
-bool ECProject::make_group_matrix(ECTYPE lrc_type, int k, int g, int l, int *group_matrix, int group_id)
+// get the matrix for encoding the local parity block of a group
+void ECProject::make_group_matrix(ECTYPE lrc_type, int k, int g, int l, int *group_matrix, int group_id)
 {
     if(lrc_type == Azu_LRC)
     {
-        return make_group_matrix_Azu_LRC(k, g, l, group_matrix, group_id);
+        make_group_matrix_Azu_LRC(k, g, l, group_matrix, group_id);
     }
     else if(lrc_type == Azu_LRC_1)
     {
-        return make_group_matrix_Azu_LRC_1(k, g, l, group_matrix, group_id);
+        make_group_matrix_Azu_LRC_1(k, g, l, group_matrix, group_id);
     }
     else if(lrc_type == Opt_LRC)
     {
-        return make_group_matrix_Opt_LRC(k, g, l, group_matrix, group_id);
+        make_group_matrix_Opt_LRC(k, g, l, group_matrix, group_id);
     }
     else if(lrc_type == Opt_Cau_LRC)
     {
-        return make_group_matrix_Opt_Cau_LRC(k, g, l, group_matrix, group_id);
+        make_group_matrix_Opt_Cau_LRC(k, g, l, group_matrix, group_id);
     }
     else if(lrc_type == Uni_Cau_LRC)
     {
-        return make_group_matrix_Uni_Cau_LRC(k, g, l, group_matrix, group_id);
+        make_group_matrix_Uni_Cau_LRC(k, g, l, group_matrix, group_id);
     }
-    return false;
 }
 
-bool ECProject::encode_Azu_LRC(int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size)
+void ECProject::encode_Azu_LRC(int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size)
 {
 	std::vector<int> lrc_matrix((g + l) * k, 0);
 	make_encoding_matrix_Azu_LRC(k, g, l, lrc_matrix.data());
 	jerasure_matrix_encode(k, g + l, 8, lrc_matrix.data(), data_ptrs, coding_ptrs, block_size);
-    return true;
 }
 
-bool ECProject::encode_Azu_LRC_1(int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size)
+void ECProject::encode_Azu_LRC_1(int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size)
 {
+    // another way to encode Azure-LRC-1
 	// std::vector<int> lrc_matrix((g + l - 1) * k, 0);
 	// make_encoding_matrix_Azu_LRC(k, g, l - 1, lrc_matrix.data());
 	// jerasure_matrix_encode(k, g + l - 1, 8, lrc_matrix.data(), data_ptrs, coding_ptrs, block_size);
@@ -585,11 +569,11 @@ bool ECProject::encode_Azu_LRC_1(int k, int g, int l, char **data_ptrs, char **c
     std::vector<int> lrc_matrix((g + l) * k, 0);
     make_encoding_matrix_Azu_LRC_1(k, g, l, lrc_matrix.data());
     jerasure_matrix_encode(k, g + l, 8, lrc_matrix.data(), data_ptrs, coding_ptrs, block_size);
-    return true;
 }
 
-bool ECProject::encode_Opt_LRC(int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size)
+void ECProject::encode_Opt_LRC(int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size)
 {
+    // another way to encode Opt-LRC
     // int *matrix = reed_sol_vandermonde_coding_matrix(k, g, 8);
     // free(matrix);
     // std::vector<int> group_number(l, 0);
@@ -616,35 +600,31 @@ bool ECProject::encode_Opt_LRC(int k, int g, int l, char **data_ptrs, char **cod
     std::vector<int> lrc_matrix((g + l) * k, 0);
     make_encoding_matrix_Opt_LRC(k, g, l, lrc_matrix.data());
     jerasure_matrix_encode(k, g + l, 8, lrc_matrix.data(), data_ptrs, coding_ptrs, block_size);
-    return true;
 }
 
-bool ECProject::encode_Opt_Cau_LRC(int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size)
+void ECProject::encode_Opt_Cau_LRC(int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size)
 {
     std::vector<int> lrc_matrix((g + l) * k, 0);
     make_encoding_matrix_Opt_Cau_LRC(k, g, l, lrc_matrix.data());
     jerasure_matrix_encode(k, g + l, 8, lrc_matrix.data(), data_ptrs, coding_ptrs, block_size);
-    return true;
 }
 
-bool ECProject::encode_Uni_Cau_LRC(int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size)
+void ECProject::encode_Uni_Cau_LRC(int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size)
 {
     std::vector<int> lrc_matrix((g + l) * k, 0);
     make_encoding_matrix_Uni_Cau_LRC(k, g, l, lrc_matrix.data());
     jerasure_matrix_encode(k, g + l, 8, lrc_matrix.data(), data_ptrs, coding_ptrs, block_size);
-    return true;
 }
 
-bool ECProject::encode_LRC(ECTYPE lrc_type, int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size)
+void ECProject::encode_LRC(ECTYPE lrc_type, int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size)
 {
     std::vector<int> lrc_matrix((g + l) * k, 0);
     make_encoding_matrix(lrc_type, k, g, l, lrc_matrix.data());
     // print_matrix(lrc_matrix.data(), g + l, k, "lrc_matrix");
     jerasure_matrix_encode(k, g + l, 8, lrc_matrix.data(), data_ptrs, coding_ptrs, block_size);
-    return true;
 }
 
-bool ECProject::decode_LRC(ECTYPE lrc_type, int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size, int *erasures, int failed_num)
+void ECProject::decode_LRC(ECTYPE lrc_type, int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size, int *erasures, int failed_num)
 {
     std::vector<int> lrc_matrix((g + l) * k, 0);
     make_encoding_matrix(lrc_type, k, g, l, lrc_matrix.data());
@@ -653,28 +633,27 @@ bool ECProject::decode_LRC(ECTYPE lrc_type, int k, int g, int l, char **data_ptr
     if(i == -1)
     {
         std::cout << "[Decode] Failed!" << std::endl;
-        return false;
+        return;
     }
-    return true;
 }
 
-bool ECProject::encode_partial_blocks_for_encoding_LRC_global(ECTYPE lrc_type, int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size, std::shared_ptr<std::vector<int>> datas_idx_ptr, std::shared_ptr<std::vector<int>> parities_idx_ptr)
+void ECProject::encode_partial_blocks_for_encoding_LRC_global(ECTYPE lrc_type, int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size, std::shared_ptr<std::vector<int>> datas_idx_ptr, std::shared_ptr<std::vector<int>> parities_idx_ptr)
 {
     std::vector<int> lrc_matrix((k + g + l) * k, 0);
     get_full_matrix(lrc_matrix.data(), k);
     make_encoding_matrix(lrc_type, k, g, l, &(lrc_matrix.data())[k * k]);
-    return encode_partial_blocks_for_encoding(k, g + l, lrc_matrix.data(), data_ptrs, coding_ptrs, block_size, datas_idx_ptr, parities_idx_ptr);
+    encode_partial_blocks_for_encoding(k, g + l, lrc_matrix.data(), data_ptrs, coding_ptrs, block_size, datas_idx_ptr, parities_idx_ptr);
 }
 
-bool ECProject::encode_partial_blocks_for_decoding_LRC_global(ECTYPE lrc_type, int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size, std::shared_ptr<std::vector<int>> sls_idx_ptr, std::shared_ptr<std::vector<int>> svrs_idx_ptr, std::shared_ptr<std::vector<int>> fls_idx_ptr)
+void ECProject::encode_partial_blocks_for_decoding_LRC_global(ECTYPE lrc_type, int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size, std::shared_ptr<std::vector<int>> sls_idx_ptr, std::shared_ptr<std::vector<int>> svrs_idx_ptr, std::shared_ptr<std::vector<int>> fls_idx_ptr)
 {
     std::vector<int> lrc_matrix((k + g + l) * k, 0);
     get_full_matrix(lrc_matrix.data(), k);
     make_encoding_matrix(lrc_type, k, g, l, &(lrc_matrix.data())[k * k]);
-    return encode_partial_blocks_for_decoding(k, g + l, lrc_matrix.data(), data_ptrs, coding_ptrs, block_size, sls_idx_ptr, svrs_idx_ptr, fls_idx_ptr);
+    encode_partial_blocks_for_decoding(k, g + l, lrc_matrix.data(), data_ptrs, coding_ptrs, block_size, sls_idx_ptr, svrs_idx_ptr, fls_idx_ptr);
 }
 
-bool ECProject::encode_partial_blocks_for_decoding_LRC_local(ECTYPE lrc_type, int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size, std::shared_ptr<std::vector<int>> sls_idx_ptr, std::shared_ptr<std::vector<int>> svrs_idx_ptr, std::shared_ptr<std::vector<int>> fls_idx_ptr)
+void ECProject::encode_partial_blocks_for_decoding_LRC_local(ECTYPE lrc_type, int k, int g, int l, char **data_ptrs, char **coding_ptrs, int block_size, std::shared_ptr<std::vector<int>> sls_idx_ptr, std::shared_ptr<std::vector<int>> svrs_idx_ptr, std::shared_ptr<std::vector<int>> fls_idx_ptr)
 {
     int group_size = int(svrs_idx_ptr->size());
     int group_id = -1;
@@ -696,6 +675,7 @@ bool ECProject::encode_partial_blocks_for_decoding_LRC_local(ECTYPE lrc_type, in
             min_idx = idx;
     }
 
+    // change into the index for encoding a local parity block
     auto sls_idx_ptr_ = std::make_shared<std::vector<int>>();
     auto fls_idx_ptr_ = std::make_shared<std::vector<int>>();
     auto svrs_idx_ptr_ = std::make_shared<std::vector<int>>();
@@ -728,6 +708,340 @@ bool ECProject::encode_partial_blocks_for_decoding_LRC_local(ECTYPE lrc_type, in
     get_full_matrix(group_matrix.data(), group_size);
     make_group_matrix(lrc_type, k, g, l, &(group_matrix.data())[group_size * group_size], group_id);
     // print_matrix(group_matrix.data(), group_size + 1, group_size, "group_matrix");
-    return encode_partial_blocks_for_decoding(group_size, 1, group_matrix.data(), data_ptrs, coding_ptrs, block_size, sls_idx_ptr_, svrs_idx_ptr_, fls_idx_ptr_);
+    encode_partial_blocks_for_decoding(group_size, 1, group_matrix.data(), data_ptrs, coding_ptrs, block_size, sls_idx_ptr_, svrs_idx_ptr_, fls_idx_ptr_);
 }
 
+
+bool ECProject::check_if_decodable_Azu_LRC(int k, int g, int l, int *erasures, int failed_num)
+{
+    int r = (k + l - 1) / l;
+    std::map<int, int> b2g;
+    std::vector<int> group_fd_cnt;
+    std::vector<int> group_slp_cnt;
+    int sgp_cnt = g;
+    int idx = 0;
+    for (int i = 0; i < l; i++)
+    {
+        int group_size = std::min(r, k - i * r);
+        for (int j = 0; j < group_size; j++)
+        {
+            b2g.insert(std::make_pair(idx, i));
+            idx++;
+        }
+        b2g.insert(std::make_pair(k + g + i, i));
+        group_fd_cnt.push_back(0);
+        group_slp_cnt.push_back(1);
+    }
+
+    for (int i = 0; i < failed_num; i++)
+    {
+        int block_id = erasures[i];
+        if (block_id < k)
+        {
+            group_fd_cnt[b2g[block_id]] += 1;
+        }
+        else if (block_id < k + g && block_id >= k)
+        {
+            sgp_cnt -= 1;
+        }
+        else
+        {
+            group_slp_cnt[block_id - k - g] -= 1;
+        }
+    }
+    for (int i = 0; i < l; i++)
+    {
+        if (group_slp_cnt[i] && group_slp_cnt[i] <= group_fd_cnt[i])
+        {
+            group_fd_cnt[i] -= group_slp_cnt[i];
+            group_slp_cnt[i] = 0;
+        }
+    }
+    for (int i = 0; i < l; i++)
+    {
+        if (sgp_cnt >= group_fd_cnt[i])
+        {
+            sgp_cnt -= group_fd_cnt[i];
+            group_fd_cnt[i] = 0;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool ECProject::check_if_decodable_Azu_LRC_1(int k, int g, int l, int *erasures, int failed_num)
+{
+    int r = (k + l - 2) / (l - 1);
+    std::map<int, int> b2g;
+    std::vector<int> group_fd_cnt;
+    std::vector<int> group_slp_cnt;
+    int sgp_cnt = g;
+    int idx = 0;
+    for (int i = 0; i < l; i++)
+    {
+        int group_size = std::min(r, k - i * r);
+        for (int j = 0; j < group_size; j++)
+        {
+            b2g.insert(std::make_pair(idx, i));
+            idx++;
+        }
+        b2g.insert(std::make_pair(k + g + i, i));
+        group_fd_cnt.push_back(0);
+        group_slp_cnt.push_back(1);
+    }
+
+    for (int i = 0; i < failed_num; i++)
+    {
+        int block_id = erasures[i];
+        if (block_id < k)
+        {
+            group_fd_cnt[b2g[block_id]] += 1;
+        }
+        else if (block_id < k + g && block_id >= k)
+        {
+            sgp_cnt -= 1;
+        }
+        else
+        {
+            group_slp_cnt[block_id - k - g] -= 1;
+        }
+    }
+    for (int i = 0; i < l; i++)
+    {
+        if(i < l - 1)
+        {
+            if (group_slp_cnt[i] && group_slp_cnt[i] <= group_fd_cnt[i])
+            {
+                group_fd_cnt[i] -= group_slp_cnt[i];
+                group_slp_cnt[i] = 0;
+            }
+        }
+        else
+        {
+            if (group_slp_cnt[i] && sgp_cnt == g - 1)
+            {
+                sgp_cnt += 1;
+            }
+        }
+    }
+    for (int i = 0; i < l; i++)
+    {
+        if (sgp_cnt >= group_fd_cnt[i])
+        {
+            sgp_cnt -= group_fd_cnt[i];
+            group_fd_cnt[i] = 0;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool ECProject::check_if_decodable_Opt_LRC(int k, int g, int l, int *erasures, int failed_num)
+{
+    int r = (k + g + l - 1) / l;
+    std::map<int, int> b2g;
+    std::vector<int> group_fd_cnt;
+    std::vector<int> group_fgp_cnt;
+    std::vector<int> group_slp_cnt;
+    std::vector<bool> group_pure_flag;
+    int sgp_cnt = g;
+    int idx = 0;
+    for (int i = 0; i < l; i++)
+    {
+        int group_size = std::min(r, k + g - i * r);
+        for (int j = 0; j < group_size; j++)
+        {
+            b2g.insert(std::make_pair(idx, i));
+            idx++;
+        }
+        if (idx <= k || idx - group_size >= k)
+        {
+            group_pure_flag.push_back(true);
+        }
+        else
+        {
+            group_pure_flag.push_back(false);
+        }
+        b2g.insert(std::make_pair(k + g + i, i));
+        group_fd_cnt.push_back(0);
+        group_fgp_cnt.push_back(0);
+        group_slp_cnt.push_back(1);
+    }
+
+    for (int i = 0; i < failed_num; i++)
+    {
+        int block_id = erasures[i];
+        if (block_id < k)
+        {
+            group_fd_cnt[b2g[block_id]] += 1;
+        }
+        else if (block_id < k + g && block_id >= k)
+        {
+            group_fgp_cnt[b2g[block_id]] += 1;
+            sgp_cnt -= 1;
+        }
+        else
+        {
+            group_slp_cnt[block_id - k - g] -= 1;
+        }
+    }
+
+    for (int i = 0; i < l; i++)
+    {
+        if (group_slp_cnt[i] && group_pure_flag[i])
+        {
+            if (group_slp_cnt[i] <= group_fd_cnt[i])
+            {
+                group_fd_cnt[i] -= group_slp_cnt[i];
+                group_slp_cnt[i] = 0;
+            }
+            if (group_slp_cnt[i] && group_slp_cnt[i] == group_fgp_cnt[i])
+            {
+                group_fgp_cnt[i] -= group_slp_cnt[i];
+                group_slp_cnt[i] = 0;
+                sgp_cnt += 1;
+            }
+        }
+        else if (group_slp_cnt[i] && !group_pure_flag[i])
+        {
+            if (group_fd_cnt[i] == 1 && !group_fgp_cnt[i])
+            {
+                group_fd_cnt[i] -= group_slp_cnt[i];
+                group_slp_cnt[i] = 0;
+            }
+            else if (group_fgp_cnt[i] == 1 && !group_fd_cnt[i])
+            {
+                group_fgp_cnt[i] -= group_slp_cnt[i];
+                group_slp_cnt[i] = 0;
+                sgp_cnt += 1;
+            }
+        }
+    }
+    for (int i = 0; i < l; i++)
+    {
+        if (sgp_cnt >= group_fd_cnt[i])
+        {
+            sgp_cnt -= group_fd_cnt[i];
+            group_fd_cnt[i] = 0;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool ECProject::check_if_decodable_Opt_Cau_LRC(int k, int g, int l, int *erasures, int failed_num)
+{
+    int r = (k + l - 1) / l;
+    std::map<int, int> b2g;
+    std::vector<int> group_fd_cnt;
+    std::vector<int> group_slp_cnt;
+    int fd_cnt = 0;
+    int sgp_cnt = g;
+    int idx = 0;
+    for (int i = 0; i < l; i++)
+    {
+        int group_size = std::min(r, k - i * r);
+        for (int j = 0; j < group_size; j++)
+        {
+            b2g.insert(std::make_pair(idx, i));
+            idx++;
+        }
+        b2g.insert(std::make_pair(k + g + i, i));
+        group_fd_cnt.push_back(0);
+        group_slp_cnt.push_back(1);
+    }
+
+    for (int i = 0; i < failed_num; i++)
+    {
+        int block_id = erasures[i];
+        if (block_id < k)
+        {
+            group_fd_cnt[b2g[block_id]] += 1;
+            fd_cnt += 1;
+        }
+        else if (block_id < k + g && block_id >= k)
+        {
+            sgp_cnt -= 1;
+        }
+        else
+        {
+            group_slp_cnt[block_id - k - g] -= 1;
+        }
+    }
+
+    if(sgp_cnt < g)
+    {
+        if(sgp_cnt >= fd_cnt)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    else
+    {
+        for (int i = 0; i < l; i++)
+        {
+            if (group_slp_cnt[i] && group_slp_cnt[i] <= group_fd_cnt[i])
+            {
+                group_fd_cnt[i] -= group_slp_cnt[i];
+                group_slp_cnt[i] = 0;
+            }
+        }
+        for (int i = 0; i < l; i++)
+        {
+            if (sgp_cnt >= group_fd_cnt[i])
+            {
+                sgp_cnt -= group_fd_cnt[i];
+                group_fd_cnt[i] = 0;
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool ECProject::check_if_decodable_Uni_Cau_LRC(int k, int g, int l, int *erasures, int failed_num)
+{
+    return check_if_decodable_Opt_LRC(k, g, l, erasures, failed_num);
+}
+
+
+bool ECProject::check_if_decodable_LRC(ECTYPE lrc_type, int k, int g, int l, int *erasures, int failed_num)
+{
+    if(lrc_type == Azu_LRC)
+    {
+        return check_if_decodable_Azu_LRC(k, g, l, erasures, failed_num);
+    }
+    else if(lrc_type == Azu_LRC_1)
+    {
+        return check_if_decodable_Azu_LRC_1(k, g, l, erasures, failed_num);
+    }
+    else if(lrc_type == Opt_LRC)
+    {
+        return check_if_decodable_Opt_LRC(k, g, l, erasures, failed_num);
+    }
+    else if(lrc_type == Opt_Cau_LRC)
+    {
+        return check_if_decodable_Opt_Cau_LRC(k, g, l, erasures, failed_num);
+    }
+    else if(lrc_type == Uni_Cau_LRC)
+    {
+        return check_if_decodable_Uni_Cau_LRC(k, g, l, erasures, failed_num);
+    }
+    return false;
+}

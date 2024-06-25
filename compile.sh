@@ -1,5 +1,5 @@
-mkdir -p cmake/build
-cd cmake/build
-cmake ../..
+mkdir -p build
+cd build
+cmake ..
 make -j
 
